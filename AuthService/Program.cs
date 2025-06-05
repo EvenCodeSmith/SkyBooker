@@ -12,8 +12,14 @@ namespace AuthService
             var builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddDbContext<AuthDbContext>(options =>
-                options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
-
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
+                    sqlServerOptionsAction: sqlOptions =>
+                    {
+                        sqlOptions.EnableRetryOnFailure(
+                            maxRetryCount: 5,
+                            maxRetryDelay: TimeSpan.FromSeconds(30),
+                            errorNumbersToAdd: null);
+                    }));
 
             var key = Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"]!);
             builder.Services.AddAuthentication(options =>
@@ -40,6 +46,13 @@ namespace AuthService
             builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
+
+            // Ensure database is created
+            using (var scope = app.Services.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
+                db.Database.EnsureCreated();
+            }
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())

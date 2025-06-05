@@ -1,5 +1,8 @@
 using FlightService.Models;
 using FlightService.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace FlightService
 {
@@ -13,6 +16,23 @@ namespace FlightService
                 builder.Configuration.GetSection("FlightDatabaseSettings"));
 
             builder.Services.AddSingleton<FlightDataService>();
+
+            // Add JWT Authentication
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = "SkyBookerAuth",
+                        ValidAudience = "SkyBookerUsers",
+                        IssuerSigningKey = new SymmetricSecurityKey(
+                            Encoding.ASCII.GetBytes("LeslieSucksAtEldenRingNightReign69420SuperSigma"))
+                    };
+                });
 
             // Add services to the container.
 
@@ -30,6 +50,7 @@ namespace FlightService
                 app.UseSwaggerUI();
             }
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
 

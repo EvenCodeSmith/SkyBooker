@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - skybooker-network
+
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=YourStrong!Passw0rd
+      - MSSQL_PID=Express
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqldata:/var/opt/mssql
+    networks:
+      - skybooker-network
+    healthcheck:
+      test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "YourStrong!Passw0rd" -Q "SELECT 1" -b -o /dev/null
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  flight-service:
+    build:
+      context: .
+      dockerfile: FlightService/Dockerfile
+    ports:
+      - "5001:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - FlightDatabaseSettings__ConnectionString=mongodb://mongodb:27017
+      - FlightDatabaseSettings__DatabaseName=FlightDb
+      - FlightDatabaseSettings__FlightCollectionName=flights
+    depends_on:
+      - mongodb
+    networks:
+      - skybooker-network
+
+  booking-service:
+    build:
+      context: .
+      dockerfile: BookingService/Dockerfile
+    ports:
+      - "5002:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=db;Database=BookingDB;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True;
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - skybooker-network
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: AuthService/Dockerfile
+    ports:
+      - "5003:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=db;Database=AuthDB;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True;
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - skybooker-network
+
+networks:
+  skybooker-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+  sqldata: 
