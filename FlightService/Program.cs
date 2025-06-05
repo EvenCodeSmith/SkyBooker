@@ -1,3 +1,5 @@
+using FlightService.Models;
+using FlightService.Services;
 
 namespace FlightService
 {
@@ -6,6 +8,11 @@ namespace FlightService
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            builder.Services.Configure<FlightDatabaseSettings>(
+                builder.Configuration.GetSection("FlightDatabaseSettings"));
+
+            builder.Services.AddSingleton<FlightDataService>();
 
             // Add services to the container.
 

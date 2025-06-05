@@ -1,6 +1,21 @@
 @FlightService_HostAddress = http://localhost:5183
 
-GET {{FlightService_HostAddress}}/weatherforecast/
-Accept: application/json
+POST {{FlightService_HostAddress}}/api/flight
+Content-Type: application/json
+
+{
+  "flightId": "LX123",
+  "airlineName": "Swiss",
+  "source": "ZRH",
+  "destination": "JFK",
+  "departure_Time": "2025-06-10T08:30:00Z",
+  "arrival_Time": "2025-06-10T14:00:00Z",
+  "available_Seats": 150
+}
+
+
+###
+
+GET {{FlightService_HostAddress}}/api/flight
 
 ###
