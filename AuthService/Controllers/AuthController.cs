@@ -30,16 +30,17 @@ namespace AuthService.Controllers
 
             user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
             _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();  
 
             return Ok("User created.");
         }
 
-        [HttpGet("login")]
-        public async Task<IActionResult> Login([FromQuery] string username, [FromQuery] string password)
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginDTO loginDTO)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
-            if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.Password))
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == loginDTO.Username);
+            if (user == null || !BCrypt.Net.BCrypt.Verify(loginDTO.Password, user.Password))
                 return Unauthorized("Invalid credentials.");
 
             var tokenHandler = new JwtSecurityTokenHandler();
