@@ -3,6 +3,8 @@ using FlightService.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Serilog;
+
 
 namespace FlightService
 {
@@ -10,7 +12,13 @@ namespace FlightService
     {
         public static void Main(string[] args)
         {
+
+            Log.Logger = new LoggerConfiguration()
+            .WriteTo.Console()
+            .CreateLogger();
             var builder = WebApplication.CreateBuilder(args);
+            builder.Host.UseSerilog();
+
 
             builder.Services.Configure<FlightDatabaseSettings>(
                 builder.Configuration.GetSection("FlightDatabaseSettings"));
