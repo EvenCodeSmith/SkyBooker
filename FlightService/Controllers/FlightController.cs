@@ -25,9 +25,17 @@ public class FlightController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<Flight>> Get(string id)
     {
-        var flight = await _flightService.GetAsync(id);
-        if (flight is null) return NotFound();
-        return flight;
+        try
+        {
+            var flight = await _flightService.GetAsync(id);
+            if (flight is null) return NotFound();
+            return Ok(flight);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, "Internal server error");
+        }
+
     }
 
     [HttpPost]

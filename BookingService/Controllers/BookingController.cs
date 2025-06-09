@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace BookingService.Controllers
 {
@@ -20,19 +21,21 @@ namespace BookingService.Controllers
         [HttpGet]
         public async Task<IActionResult> GetBookings()
         {
-            var username = User.Identity?.Name;
-            var bookings = await _context.Bookings
-                .Where(b => b.Username == username)
-                .ToListAsync();
+            var bookings = await _context.Bookings.ToListAsync();
             return Ok(bookings);
         }
+
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetBooking(int id)
         {
-            var username = User.Identity?.Name;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
             var booking = await _context.Bookings
-                .FirstOrDefaultAsync(b => b.Id == id && b.Username == username);
+                .FirstOrDefaultAsync(b => b.Id == id && b.PassengerId == userId);
 
             if (booking == null)
                 return NotFound();
@@ -40,21 +43,31 @@ namespace BookingService.Controllers
             return Ok(booking);
         }
 
+
         [HttpPost]
         public async Task<IActionResult> CreateBooking(Booking booking)
         {
-            booking.Username = User.Identity?.Name;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null)
+                return Unauthorized();
+
+            booking.PassengerId = userId;
             _context.Bookings.Add(booking);
             await _context.SaveChangesAsync();
             return CreatedAtAction(nameof(GetBooking), new { id = booking.Id }, booking);
         }
 
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> CancelBooking(int id)
         {
-            var username = User.Identity?.Name;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
             var booking = await _context.Bookings
-                .FirstOrDefaultAsync(b => b.Id == id && b.Username == username);
+                .FirstOrDefaultAsync(b => b.Id == id && b.PassengerId == userId);
 
             if (booking == null)
                 return NotFound();

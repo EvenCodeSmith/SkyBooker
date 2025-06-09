@@ -4,6 +4,7 @@ using BookingService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BookingService.Migrations
 {
     [DbContext(typeof(BookingDbContext))]
-    partial class BookingDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250606091633_RemoveUsernameFromBooking")]
+    partial class RemoveUsernameFromBooking
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -58,30 +61,6 @@ namespace BookingService.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Bookings");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 7,
-                            CreatedAt = new DateTime(2025, 6, 6, 9, 27, 4, 430, DateTimeKind.Utc).AddTicks(1386),
-                            FlightId = "LX100",
-                            PassengerFirstname = "Max",
-                            PassengerId = "user-001",
-                            PassengerLastname = "Muster",
-                            TicketCount = 1,
-                            UpdatedAt = new DateTime(2025, 6, 6, 9, 27, 4, 430, DateTimeKind.Utc).AddTicks(1387)
-                        },
-                        new
-                        {
-                            Id = 8,
-                            CreatedAt = new DateTime(2025, 6, 6, 9, 27, 4, 430, DateTimeKind.Utc).AddTicks(1390),
-                            FlightId = "LH222",
-                            PassengerFirstname = "Lisa",
-                            PassengerId = "user-002",
-                            PassengerLastname = "Meier",
-                            TicketCount = 2,
-                            UpdatedAt = new DateTime(2025, 6, 6, 9, 27, 4, 430, DateTimeKind.Utc).AddTicks(1391)
-                        });
                 });
 #pragma warning restore 612, 618
         }
